@@ -1,43 +1,40 @@
 package core.basesyntax;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class SalaryInfo {
 
-    private String getName(String[] names, String data) {
-        for (String name : names) {
-            if (name.equals(data)) {
-                return name;
-            }
-        }
-        return null;
-    }
-
     public String getSalaryInfo(String[] names, String[] data, String dateFrom, String dateTo) {
 
-        LocalDate from = LocalDate.parse(dateFrom);
-        LocalDate to = LocalDate.parse(dateTo);
-        StringBuilder builder = new StringBuilder();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        LocalDate from = LocalDate.parse(dateFrom, formatter);
+        LocalDate to = LocalDate.parse(dateTo, formatter);
+        StringBuilder builder = new StringBuilder("Report for period ");
+        builder.append(dateFrom).append(" - ").append(dateTo).append(System.lineSeparator());
 
-        for (String row : data) {
-            String[] dataLine = row.split(" ");
-            LocalDate localDate = LocalDate.parse(dataLine[0]);
-            String name = getName(names, dataLine[1]);
-            if (name == null) {
-                continue;
+        for (String name : names) {
+
+            int moneyEarned = 0;
+
+            for (String row : data) {
+                String[] dataLine = row.split(" ");
+                LocalDate date = LocalDate.parse(dataLine[0], formatter);
+                if (name.equals(dataLine[1]) && !date.isBefore(from) && !date.isAfter(to)) {
+
+                    int hours = Integer.parseInt(dataLine[2]);
+                    int wage = Integer.parseInt(dataLine[3]);
+
+                    moneyEarned += hours * wage;
+                }
             }
-            int hours = Integer.parseInt(dataLine[2]);
-            int wage = Integer.parseInt(dataLine[3]);
 
-            int moneyEarned = hours * wage;
-
-            builder.append("Report for period ")
-                    .append(dateFrom).append(" - ")
-                    .append(dateTo).append('\n')
-                    .append(name).append(" - ")
-                    .append(moneyEarned)
-                    .append('\n');
+            builder.append(name).append(" - ")
+                    .append(moneyEarned);
+            if (!name.equals(names[names.length - 1])) {
+                builder.append(System.lineSeparator());
+            }
         }
-
+        return builder.toString();
     }
 }
